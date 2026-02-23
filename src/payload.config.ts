@@ -1,5 +1,7 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { cs } from '@payloadcms/translations/languages/cs'
+import { en } from '@payloadcms/translations/languages/en'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -22,6 +24,13 @@ export default buildConfig({
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+  },
+  i18n: {
+    fallbackLanguage: 'cs',
+    supportedLanguages: {
+      cs,
+      en,
     },
   },
   collections: [Users, Media, Weby, Kategorie, Stranky, Blogy, Produkty, NastaveniStranky],
