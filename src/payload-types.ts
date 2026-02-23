@@ -69,6 +69,12 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    weby: Weby;
+    kategorie: Kategorie;
+    stranky: Stranky;
+    blogy: Blogy;
+    produkty: Produkty;
+    'nastaveni-stranky': NastaveniStranky;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +84,12 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    weby: WebySelect<false> | WebySelect<true>;
+    kategorie: KategorieSelect<false> | KategorieSelect<true>;
+    stranky: StrankySelect<false> | StrankySelect<true>;
+    blogy: BlogySelect<false> | BlogySelect<true>;
+    produkty: ProduktySelect<false> | ProduktySelect<true>;
+    'nastaveni-stranky': NastaveniStrankySelect<false> | NastaveniStrankySelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -160,6 +172,182 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "weby".
+ */
+export interface Weby {
+  id: string;
+  nazev: string;
+  kod: string;
+  domena: string;
+  vychoziJazyk: 'cs' | 'sk' | 'en' | 'de';
+  aktivni?: boolean | null;
+  popis?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kategorie".
+ */
+export interface Kategorie {
+  id: string;
+  web: string | Weby;
+  nazev: string;
+  slug: string;
+  popis?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stranky".
+ */
+export interface Stranky {
+  id: string;
+  web: string | Weby;
+  nazev: string;
+  slug: string;
+  perex?: string | null;
+  obsah: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blogy".
+ */
+export interface Blogy {
+  id: string;
+  web: string | Weby;
+  nazev: string;
+  slug: string;
+  perex?: string | null;
+  obsah: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  datumPublikace?: string | null;
+  autor?: (string | null) | User;
+  kategorie?: (string | Kategorie)[] | null;
+  nahledovyObrazek?: (string | null) | Media;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "produkty".
+ */
+export interface Produkty {
+  id: string;
+  web: string | Weby;
+  nazev: string;
+  slug: string;
+  sku?: string | null;
+  kratkyPopis?: string | null;
+  popis?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  cena: number;
+  mena: 'CZK' | 'EUR' | 'USD';
+  skladem?: boolean | null;
+  kategorie?: (string | Kategorie)[] | null;
+  hlavniObrazek?: (string | null) | Media;
+  galerie?: (string | Media)[] | null;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nastaveni-stranky".
+ */
+export interface NastaveniStranky {
+  id: string;
+  web: string | Weby;
+  nazev: string;
+  slogan?: string | null;
+  logo?: (string | null) | Media;
+  favicon?: (string | null) | Media;
+  kontakt?: {
+    email?: string | null;
+    telefon?: string | null;
+  };
+  socialniSite?: {
+    facebook?: string | null;
+    instagram?: string | null;
+    linkedin?: string | null;
+  };
+  paticka?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -189,6 +377,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'weby';
+        value: string | Weby;
+      } | null)
+    | ({
+        relationTo: 'kategorie';
+        value: string | Kategorie;
+      } | null)
+    | ({
+        relationTo: 'stranky';
+        value: string | Stranky;
+      } | null)
+    | ({
+        relationTo: 'blogy';
+        value: string | Blogy;
+      } | null)
+    | ({
+        relationTo: 'produkty';
+        value: string | Produkty;
+      } | null)
+    | ({
+        relationTo: 'nastaveni-stranky';
+        value: string | NastaveniStranky;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -271,6 +483,130 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "weby_select".
+ */
+export interface WebySelect<T extends boolean = true> {
+  nazev?: T;
+  kod?: T;
+  domena?: T;
+  vychoziJazyk?: T;
+  aktivni?: T;
+  popis?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kategorie_select".
+ */
+export interface KategorieSelect<T extends boolean = true> {
+  web?: T;
+  nazev?: T;
+  slug?: T;
+  popis?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stranky_select".
+ */
+export interface StrankySelect<T extends boolean = true> {
+  web?: T;
+  nazev?: T;
+  slug?: T;
+  perex?: T;
+  obsah?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blogy_select".
+ */
+export interface BlogySelect<T extends boolean = true> {
+  web?: T;
+  nazev?: T;
+  slug?: T;
+  perex?: T;
+  obsah?: T;
+  datumPublikace?: T;
+  autor?: T;
+  kategorie?: T;
+  nahledovyObrazek?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "produkty_select".
+ */
+export interface ProduktySelect<T extends boolean = true> {
+  web?: T;
+  nazev?: T;
+  slug?: T;
+  sku?: T;
+  kratkyPopis?: T;
+  popis?: T;
+  cena?: T;
+  mena?: T;
+  skladem?: T;
+  kategorie?: T;
+  hlavniObrazek?: T;
+  galerie?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nastaveni-stranky_select".
+ */
+export interface NastaveniStrankySelect<T extends boolean = true> {
+  web?: T;
+  nazev?: T;
+  slogan?: T;
+  logo?: T;
+  favicon?: T;
+  kontakt?:
+    | T
+    | {
+        email?: T;
+        telefon?: T;
+      };
+  socialniSite?:
+    | T
+    | {
+        facebook?: T;
+        instagram?: T;
+        linkedin?: T;
+      };
+  paticka?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
