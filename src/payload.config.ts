@@ -19,6 +19,21 @@ import { NastaveniStranky } from './collections/NastaveniStranky'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const defaultAllowedOrigins = [
+  'https://payload-cms.sliplane.app',
+  'https://farnosthnojice.cz',
+  'https://www.farnosthnojice.cz',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+]
+
+const extraAllowedOrigins = (process.env.PAYLOAD_ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...extraAllowedOrigins])]
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -36,6 +51,8 @@ export default buildConfig({
   collections: [Users, Media, Weby, Kategorie, Stranky, Blogy, Produkty, NastaveniStranky],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
+  cors: allowedOrigins,
+  csrf: allowedOrigins,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
