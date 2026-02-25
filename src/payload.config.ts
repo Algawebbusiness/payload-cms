@@ -12,6 +12,7 @@ import { Media } from './collections/Media'
 import { Weby } from './collections/Weby'
 import { Kategorie } from './collections/Kategorie'
 import { Stranky } from './collections/Stranky'
+import { Bohosluzby } from './collections/Bohosluzby'
 import { Blogy } from './collections/Blogy'
 import { Produkty } from './collections/Produkty'
 import { NastaveniStranky } from './collections/NastaveniStranky'
@@ -48,7 +49,17 @@ export default buildConfig({
       en,
     },
   },
-  collections: [Users, Media, Weby, Kategorie, Stranky, Blogy, Produkty, NastaveniStranky],
+  collections: [
+    Users,
+    Media,
+    Weby,
+    Kategorie,
+    Stranky,
+    Bohosluzby,
+    Blogy,
+    Produkty,
+    NastaveniStranky,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   cors: allowedOrigins,

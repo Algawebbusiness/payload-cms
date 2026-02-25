@@ -40,6 +40,21 @@ export const NastaveniStranky: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'historie',
+      label: 'Historie farnosti',
+      type: 'richText',
+    },
+    {
+      name: 'adresa',
+      label: 'Adresa',
+      type: 'text',
+    },
+    {
+      name: 'mapEmbed',
+      label: 'Mapa (iframe URL nebo embed)',
+      type: 'textarea',
+    },
+    {
       name: 'logo',
       label: 'Logo',
       type: 'upload',
