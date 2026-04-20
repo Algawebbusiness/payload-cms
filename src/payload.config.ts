@@ -21,7 +21,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const defaultAllowedOrigins = [
-  'https://payload-cms.sliplane.app',
+  'https://cms.algaweb.site',
   'https://farnosthnojice.cz',
   'https://www.farnosthnojice.cz',
   'http://localhost:4173',
