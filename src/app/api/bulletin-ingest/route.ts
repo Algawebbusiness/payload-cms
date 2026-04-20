@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
   try {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'payload-bulletin-'))
-    const filename = sanitizeFilename(upload.name || 'tydenni-zpravodaj.pdf')
+    const filename = sanitizeFilename(upload.name || defaultFilenameForMimeType(upload.type))
     const tempFilePath = path.join(tempDir, filename)
     const buffer = Buffer.from(await upload.arrayBuffer())
 
@@ -185,6 +185,17 @@ function sanitizeFilename(filename: string) {
     .replace(/^-|-$/g, '')
     .toLowerCase()
 
-  if (!cleaned) return 'tydenni-zpravodaj.pdf'
-  return cleaned.endsWith('.pdf') ? cleaned : `${cleaned}.pdf`
+  return cleaned || 'tydenni-zpravodaj'
+}
+
+function defaultFilenameForMimeType(mimeType: string) {
+  const normalized = String(mimeType || '').toLowerCase()
+
+  if (normalized.includes('pdf')) return 'tydenni-zpravodaj.pdf'
+  if (normalized.includes('png')) return 'tydenni-zpravodaj.png'
+  if (normalized.includes('webp')) return 'tydenni-zpravodaj.webp'
+  if (normalized.includes('gif')) return 'tydenni-zpravodaj.gif'
+  if (normalized.includes('jpeg') || normalized.includes('jpg')) return 'tydenni-zpravodaj.jpg'
+
+  return 'tydenni-zpravodaj'
 }
