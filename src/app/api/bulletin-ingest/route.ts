@@ -61,10 +61,17 @@ export async function POST(request: Request) {
 
     await writeFile(tempFilePath, buffer)
 
+    const webTenantId = web.tenant
+      ? typeof web.tenant === 'object'
+        ? web.tenant.id
+        : web.tenant
+      : undefined
+
     const mediaDoc = await payload.create({
       collection: 'media',
       data: {
         alt: subject || sender || filename,
+        ...(webTenantId ? { tenant: webTenantId } : {}),
       },
       filePath: tempFilePath,
       overrideAccess: true,

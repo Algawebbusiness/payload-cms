@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated, isPublic } from '../access/isAuthenticated'
+import { publicOrTenantRead, tenantCreate, tenantWrite } from '../access/tenantAccess'
 
 export const Weby: CollectionConfig = {
   slug: 'weby',
@@ -9,16 +9,23 @@ export const Weby: CollectionConfig = {
     plural: 'Weby',
   },
   access: {
-    read: isPublic,
-    create: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated,
+    read: publicOrTenantRead,
+    create: tenantCreate,
+    update: tenantWrite,
+    delete: tenantWrite,
   },
   admin: {
     useAsTitle: 'nazev',
-    defaultColumns: ['nazev', 'domena', 'aktivni'],
+    defaultColumns: ['nazev', 'domena', 'tenant', 'aktivni'],
   },
   fields: [
+    {
+      name: 'tenant',
+      label: 'Tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      index: true,
+    },
     {
       name: 'nazev',
       label: 'Název',

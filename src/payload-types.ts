@@ -68,10 +68,12 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    tenants: Tenant;
     media: Media;
     weby: Weby;
     kategorie: Kategorie;
     stranky: Stranky;
+    bohosluzby: Bohosluzby;
     blogy: Blogy;
     produkty: Produkty;
     'nastaveni-stranky': NastaveniStranky;
@@ -83,10 +85,12 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    tenants: TenantsSelect<false> | TenantsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     weby: WebySelect<false> | WebySelect<true>;
     kategorie: KategorieSelect<false> | KategorieSelect<true>;
     stranky: StrankySelect<false> | StrankySelect<true>;
+    bohosluzby: BohosluzbySelect<false> | BohosluzbySelect<true>;
     blogy: BlogySelect<false> | BlogySelect<true>;
     produkty: ProduktySelect<false> | ProduktySelect<true>;
     'nastaveni-stranky': NastaveniStrankySelect<false> | NastaveniStrankySelect<true>;
@@ -132,6 +136,8 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  role: 'superadmin' | 'client_admin' | 'editor' | 'viewer';
+  tenants?: (string | Tenant)[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -153,10 +159,23 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants".
+ */
+export interface Tenant {
+  id: string;
+  nazev: string;
+  slug: string;
+  aktivni?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: string;
+  tenant?: (string | null) | Tenant;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -176,6 +195,7 @@ export interface Media {
  */
 export interface Weby {
   id: string;
+  tenant?: (string | null) | Tenant;
   nazev: string;
   kod: string;
   domena: string;
@@ -191,6 +211,7 @@ export interface Weby {
  */
 export interface Kategorie {
   id: string;
+  tenant?: (string | null) | Tenant;
   web: string | Weby;
   nazev: string;
   slug: string;
@@ -204,6 +225,7 @@ export interface Kategorie {
  */
 export interface Stranky {
   id: string;
+  tenant?: (string | null) | Tenant;
   web: string | Weby;
   nazev: string;
   slug: string;
@@ -233,10 +255,42 @@ export interface Stranky {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bohosluzby".
+ */
+export interface Bohosluzby {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  web: string | Weby;
+  title: string;
+  date: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  bulletin?: (string | null) | Media;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "blogy".
  */
 export interface Blogy {
   id: string;
+  tenant?: (string | null) | Tenant;
   web: string | Weby;
   nazev: string;
   slug: string;
@@ -274,6 +328,7 @@ export interface Blogy {
  */
 export interface Produkty {
   id: string;
+  tenant?: (string | null) | Tenant;
   web: string | Weby;
   nazev: string;
   slug: string;
@@ -314,9 +369,27 @@ export interface Produkty {
  */
 export interface NastaveniStranky {
   id: string;
+  tenant?: (string | null) | Tenant;
   web: string | Weby;
   nazev: string;
   slogan?: string | null;
+  historie?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  adresa?: string | null;
+  mapEmbed?: string | null;
   logo?: (string | null) | Media;
   favicon?: (string | null) | Media;
   kontakt?: {
@@ -375,6 +448,10 @@ export interface PayloadLockedDocument {
         value: string | User;
       } | null)
     | ({
+        relationTo: 'tenants';
+        value: string | Tenant;
+      } | null)
+    | ({
         relationTo: 'media';
         value: string | Media;
       } | null)
@@ -389,6 +466,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stranky';
         value: string | Stranky;
+      } | null)
+    | ({
+        relationTo: 'bohosluzby';
+        value: string | Bohosluzby;
       } | null)
     | ({
         relationTo: 'blogy';
@@ -449,6 +530,8 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  tenants?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -468,9 +551,21 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants_select".
+ */
+export interface TenantsSelect<T extends boolean = true> {
+  nazev?: T;
+  slug?: T;
+  aktivni?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  tenant?: T;
   alt?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -489,6 +584,7 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "weby_select".
  */
 export interface WebySelect<T extends boolean = true> {
+  tenant?: T;
   nazev?: T;
   kod?: T;
   domena?: T;
@@ -503,6 +599,7 @@ export interface WebySelect<T extends boolean = true> {
  * via the `definition` "kategorie_select".
  */
 export interface KategorieSelect<T extends boolean = true> {
+  tenant?: T;
   web?: T;
   nazev?: T;
   slug?: T;
@@ -515,6 +612,7 @@ export interface KategorieSelect<T extends boolean = true> {
  * via the `definition` "stranky_select".
  */
 export interface StrankySelect<T extends boolean = true> {
+  tenant?: T;
   web?: T;
   nazev?: T;
   slug?: T;
@@ -532,9 +630,26 @@ export interface StrankySelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bohosluzby_select".
+ */
+export interface BohosluzbySelect<T extends boolean = true> {
+  tenant?: T;
+  web?: T;
+  title?: T;
+  date?: T;
+  description?: T;
+  bulletin?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "blogy_select".
  */
 export interface BlogySelect<T extends boolean = true> {
+  tenant?: T;
   web?: T;
   nazev?: T;
   slug?: T;
@@ -559,6 +674,7 @@ export interface BlogySelect<T extends boolean = true> {
  * via the `definition` "produkty_select".
  */
 export interface ProduktySelect<T extends boolean = true> {
+  tenant?: T;
   web?: T;
   nazev?: T;
   slug?: T;
@@ -586,9 +702,13 @@ export interface ProduktySelect<T extends boolean = true> {
  * via the `definition` "nastaveni-stranky_select".
  */
 export interface NastaveniStrankySelect<T extends boolean = true> {
+  tenant?: T;
   web?: T;
   nazev?: T;
   slogan?: T;
+  historie?: T;
+  adresa?: T;
+  mapEmbed?: T;
   logo?: T;
   favicon?: T;
   kontakt?:

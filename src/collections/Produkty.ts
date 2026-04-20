@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated, isPublic } from '../access/isAuthenticated'
+import { publicOrTenantRead, tenantCreate, tenantWrite } from '../access/tenantAccess'
 
 export const Produkty: CollectionConfig = {
   slug: 'produkty',
@@ -9,19 +9,26 @@ export const Produkty: CollectionConfig = {
     plural: 'Produkty',
   },
   access: {
-    read: isPublic,
-    create: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated,
+    read: publicOrTenantRead,
+    create: tenantCreate,
+    update: tenantWrite,
+    delete: tenantWrite,
   },
   admin: {
     useAsTitle: 'nazev',
-    defaultColumns: ['nazev', 'web', 'cena', 'mena', 'skladem'],
+    defaultColumns: ['nazev', 'web', 'tenant', 'cena', 'mena', 'skladem'],
   },
   versions: {
     drafts: true,
   },
   fields: [
+    {
+      name: 'tenant',
+      label: 'Tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      index: true,
+    },
     {
       name: 'web',
       label: 'Web',

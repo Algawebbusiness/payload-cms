@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
+import { Tenants } from './collections/Tenants'
 import { Media } from './collections/Media'
 import { Weby } from './collections/Weby'
 import { Kategorie } from './collections/Kategorie'
@@ -51,6 +52,7 @@ export default buildConfig({
   },
   collections: [
     Users,
+    Tenants,
     Media,
     Weby,
     Kategorie,

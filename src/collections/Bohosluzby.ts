@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated, isPublic } from '../access/isAuthenticated'
+import { publicOrTenantRead, tenantCreate, tenantWrite } from '../access/tenantAccess'
 
 export const Bohosluzby: CollectionConfig = {
   slug: 'bohosluzby',
@@ -9,19 +9,26 @@ export const Bohosluzby: CollectionConfig = {
     plural: 'Bohoslužby',
   },
   access: {
-    read: isPublic,
-    create: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated,
+    read: publicOrTenantRead,
+    create: tenantCreate,
+    update: tenantWrite,
+    delete: tenantWrite,
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'web', 'date', 'isActive', 'updatedAt'],
+    defaultColumns: ['title', 'web', 'tenant', 'date', 'isActive', 'updatedAt'],
   },
   versions: {
     drafts: true,
   },
   fields: [
+    {
+      name: 'tenant',
+      label: 'Tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      index: true,
+    },
     {
       name: 'web',
       label: 'Web',

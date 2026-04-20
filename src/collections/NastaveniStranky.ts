@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated, isPublic } from '../access/isAuthenticated'
+import { publicOrTenantRead, tenantCreate, tenantWrite } from '../access/tenantAccess'
 
 export const NastaveniStranky: CollectionConfig = {
   slug: 'nastaveni-stranky',
@@ -9,16 +9,23 @@ export const NastaveniStranky: CollectionConfig = {
     plural: 'Nastavení stránky',
   },
   access: {
-    read: isPublic,
-    create: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated,
+    read: publicOrTenantRead,
+    create: tenantCreate,
+    update: tenantWrite,
+    delete: tenantWrite,
   },
   admin: {
     useAsTitle: 'nazev',
-    defaultColumns: ['nazev', 'web'],
+    defaultColumns: ['nazev', 'web', 'tenant'],
   },
   fields: [
+    {
+      name: 'tenant',
+      label: 'Tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      index: true,
+    },
     {
       name: 'web',
       label: 'Web',

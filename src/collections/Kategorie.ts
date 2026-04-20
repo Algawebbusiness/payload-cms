@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated, isPublic } from '../access/isAuthenticated'
+import { publicOrTenantRead, tenantCreate, tenantWrite } from '../access/tenantAccess'
 
 export const Kategorie: CollectionConfig = {
   slug: 'kategorie',
@@ -9,16 +9,23 @@ export const Kategorie: CollectionConfig = {
     plural: 'Kategorie',
   },
   access: {
-    read: isPublic,
-    create: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated,
+    read: publicOrTenantRead,
+    create: tenantCreate,
+    update: tenantWrite,
+    delete: tenantWrite,
   },
   admin: {
     useAsTitle: 'nazev',
-    defaultColumns: ['nazev', 'web', 'slug'],
+    defaultColumns: ['nazev', 'web', 'tenant', 'slug'],
   },
   fields: [
+    {
+      name: 'tenant',
+      label: 'Tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      index: true,
+    },
     {
       name: 'web',
       label: 'Web',
