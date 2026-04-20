@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     })
 
     const updatedService = await payload.update({
-      collection: 'bohosluzby',
+      collection: 'zpravodaj',
       id: service.id,
       data: {
         bulletin: mediaDoc.id,
@@ -109,22 +109,17 @@ function readString(formData: FormData, key: string) {
 async function findWebByCode(payload: any, webCode: string) {
   const result = await payload.find({
     collection: 'weby',
-    where: {
-      kod: {
-        equals: webCode,
-      },
-    },
+    where: { kod: { equals: webCode } },
     limit: 1,
     overrideAccess: true,
   })
-
   return result.docs[0] || null
 }
 
 async function findServiceById(payload: any, serviceId: string) {
   try {
     return await payload.findByID({
-      collection: 'bohosluzby',
+      collection: 'zpravodaj',
       id: serviceId,
       overrideAccess: true,
     })
@@ -135,26 +130,17 @@ async function findServiceById(payload: any, serviceId: string) {
 
 async function findBestService(payload: any, webId: string) {
   const result = await payload.find({
-    collection: 'bohosluzby',
+    collection: 'zpravodaj',
     where: {
       and: [
-        {
-          web: {
-            equals: webId,
-          },
-        },
-        {
-          isActive: {
-            equals: true,
-          },
-        },
+        { web: { equals: webId } },
+        { isActive: { equals: true } },
       ],
     },
     sort: 'date',
     limit: 20,
     overrideAccess: true,
   })
-
   return pickBestService(result.docs)
 }
 
@@ -174,14 +160,12 @@ function pickBestService(services: any[]) {
 
   if (upcoming.length > 0) return upcoming[0].service
 
-  const latestPast = datedServices.sort((a, b) => b.ts - a.ts)[0]
-  return latestPast.service
+  return datedServices.sort((a, b) => b.ts - a.ts)[0].service
 }
 
 function toTimestamp(value?: null | string) {
   if (!value) return Number.NaN
-  const date = new Date(value)
-  return date.getTime()
+  return new Date(value).getTime()
 }
 
 function sanitizeFilename(filename: string) {
@@ -191,18 +175,15 @@ function sanitizeFilename(filename: string) {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase()
-
   return cleaned || 'tydenni-zpravodaj'
 }
 
 function defaultFilenameForMimeType(mimeType: string) {
   const normalized = String(mimeType || '').toLowerCase()
-
   if (normalized.includes('pdf')) return 'tydenni-zpravodaj.pdf'
   if (normalized.includes('png')) return 'tydenni-zpravodaj.png'
   if (normalized.includes('webp')) return 'tydenni-zpravodaj.webp'
   if (normalized.includes('gif')) return 'tydenni-zpravodaj.gif'
   if (normalized.includes('jpeg') || normalized.includes('jpg')) return 'tydenni-zpravodaj.jpg'
-
   return 'tydenni-zpravodaj'
 }

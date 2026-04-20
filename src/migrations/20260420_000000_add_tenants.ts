@@ -4,7 +4,7 @@ const DEFAULT_TENANT_SLUG = 'farnosthnojice'
 const DEFAULT_TENANT_NAME = 'Farnost Hnojice'
 
 const CONTENT_COLLECTIONS = [
-  'bohosluzby',
+  'zpravodaj',
   'stranky',
   'nastaveni-stranky',
   'blogy',
@@ -13,6 +13,21 @@ const CONTENT_COLLECTIONS = [
 ] as const
 
 export async function up({ payload }: MigrateUpArgs): Promise<void> {
+  const db = (payload.db as any).connection.db
+
+  // 0. Rename MongoDB collection bohosluzby → zpravodaj (one-time)
+  const existingCollections = await db.listCollections().toArray()
+  const collectionNames = existingCollections.map((c: any) => c.name)
+
+  if (collectionNames.includes('bohosluzby') && !collectionNames.includes('zpravodaj')) {
+    await db.collection('bohosluzby').rename('zpravodaj')
+    console.log('[migration] Renamed collection: bohosluzby → zpravodaj')
+  }
+  if (collectionNames.includes('_bohosluzby_v') && !collectionNames.includes('_zpravodaj_v')) {
+    await db.collection('_bohosluzby_v').rename('_zpravodaj_v')
+    console.log('[migration] Renamed versions collection: _bohosluzby_v → _zpravodaj_v')
+  }
+
   // 1. Create default tenant (idempotent)
   let tenantId: string
 
@@ -37,11 +52,7 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
   }
 
   // 2. Backfill weby
-  const weby = await payload.find({
-    collection: 'weby',
-    limit: 0,
-    overrideAccess: true,
-  })
+  const weby = await payload.find({ collection: 'weby', limit: 0, overrideAccess: true })
 
   for (const web of weby.docs) {
     if (!web.tenant) {
@@ -67,7 +78,7 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
     for (const doc of docs.docs) {
       if (doc.tenant) continue
 
-      let webTenantId: string | null = null
+      let webTenantId: string = tenantId
 
       if (doc.web) {
         const webId = typeof doc.web === 'object' ? (doc.web as any).id : doc.web
@@ -77,16 +88,14 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
             id: webId,
             overrideAccess: true,
           })
-          webTenantId = webDoc.tenant
-            ? typeof webDoc.tenant === 'object'
+          if (webDoc.tenant) {
+            webTenantId = typeof webDoc.tenant === 'object'
               ? String((webDoc.tenant as any).id)
               : String(webDoc.tenant)
-            : tenantId
+          }
         } catch {
-          webTenantId = tenantId
+          // fall back to default tenant
         }
-      } else {
-        webTenantId = tenantId
       }
 
       await payload.update({
@@ -100,12 +109,8 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
     console.log(`[migration] ${collSlug}: backfilled ${updated}/${docs.docs.length}`)
   }
 
-  // 4. Backfill media (no web relation — assign all without tenant to default)
-  const media = await payload.find({
-    collection: 'media',
-    limit: 0,
-    overrideAccess: true,
-  })
+  // 4. Backfill media
+  const media = await payload.find({ collection: 'media', limit: 0, overrideAccess: true })
 
   let mediaUpdated = 0
   for (const item of media.docs) {
@@ -122,11 +127,7 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
   console.log(`[migration] media: backfilled ${mediaUpdated}/${media.docs.length}`)
 
   // 5. Assign existing users to default tenant with superadmin role
-  const users = await payload.find({
-    collection: 'users',
-    limit: 0,
-    overrideAccess: true,
-  })
+  const users = await payload.find({ collection: 'users', limit: 0, overrideAccess: true })
 
   let usersUpdated = 0
   for (const user of users.docs) {
@@ -140,9 +141,9 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
       usersUpdated++
     }
   }
-  console.log(`[migration] users: assigned ${usersUpdated}/${users.docs.length} to default tenant as superadmin`)
+  console.log(`[migration] users: ${usersUpdated}/${users.docs.length} assigned to ${DEFAULT_TENANT_SLUG} as superadmin`)
 }
 
-export async function down({ payload }: MigrateDownArgs): Promise<void> {
-  console.log('[migration] down: tenant fields left in place (safe to re-run up)')
+export async function down({ payload: _payload }: MigrateDownArgs): Promise<void> {
+  console.log('[migration] down: no-op')
 }

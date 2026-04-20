@@ -73,7 +73,7 @@ export interface Config {
     weby: Weby;
     kategorie: Kategorie;
     stranky: Stranky;
-    bohosluzby: Bohosluzby;
+    zpravodaj: Zpravodaj;
     blogy: Blogy;
     produkty: Produkty;
     'nastaveni-stranky': NastaveniStranky;
@@ -90,7 +90,7 @@ export interface Config {
     weby: WebySelect<false> | WebySelect<true>;
     kategorie: KategorieSelect<false> | KategorieSelect<true>;
     stranky: StrankySelect<false> | StrankySelect<true>;
-    bohosluzby: BohosluzbySelect<false> | BohosluzbySelect<true>;
+    zpravodaj: ZpravodajSelect<false> | ZpravodajSelect<true>;
     blogy: BlogySelect<false> | BlogySelect<true>;
     produkty: ProduktySelect<false> | ProduktySelect<true>;
     'nastaveni-stranky': NastaveniStrankySelect<false> | NastaveniStrankySelect<true>;
@@ -255,9 +255,9 @@ export interface Stranky {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "bohosluzby".
+ * via the `definition` "zpravodaj".
  */
-export interface Bohosluzby {
+export interface Zpravodaj {
   id: string;
   tenant?: (string | null) | Tenant;
   web: string | Weby;
@@ -468,8 +468,8 @@ export interface PayloadLockedDocument {
         value: string | Stranky;
       } | null)
     | ({
-        relationTo: 'bohosluzby';
-        value: string | Bohosluzby;
+        relationTo: 'zpravodaj';
+        value: string | Zpravodaj;
       } | null)
     | ({
         relationTo: 'blogy';
@@ -630,9 +630,9 @@ export interface StrankySelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "bohosluzby_select".
+ * via the `definition` "zpravodaj_select".
  */
-export interface BohosluzbySelect<T extends boolean = true> {
+export interface ZpravodajSelect<T extends boolean = true> {
   tenant?: T;
   web?: T;
   title?: T;

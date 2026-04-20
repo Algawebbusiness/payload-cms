@@ -13,7 +13,7 @@ import { Media } from './collections/Media'
 import { Weby } from './collections/Weby'
 import { Kategorie } from './collections/Kategorie'
 import { Stranky } from './collections/Stranky'
-import { Bohosluzby } from './collections/Bohosluzby'
+import { Zpravodaj } from './collections/Zpravodaj'
 import { Blogy } from './collections/Blogy'
 import { Produkty } from './collections/Produkty'
 import { NastaveniStranky } from './collections/NastaveniStranky'
@@ -57,7 +57,7 @@ export default buildConfig({
     Weby,
     Kategorie,
     Stranky,
-    Bohosluzby,
+    Zpravodaj,
     Blogy,
     Produkty,
     NastaveniStranky,
