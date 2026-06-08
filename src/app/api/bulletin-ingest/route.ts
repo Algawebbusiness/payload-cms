@@ -40,17 +40,6 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: `Unknown webCode: ${webCode}` }, { status: 404 })
   }
 
-  const service = serviceId
-    ? await findServiceById(payload, serviceId)
-    : await findBestService(payload, web.id)
-
-  if (!service?.id) {
-    return Response.json(
-      { ok: false, error: `No target service found for webCode ${webCode}.` },
-      { status: 404 },
-    )
-  }
-
   let tempDir = ''
 
   try {
@@ -76,6 +65,22 @@ export async function POST(request: Request) {
       filePath: tempFilePath,
       overrideAccess: true,
     })
+
+    const service = serviceId
+      ? await findServiceById(payload, serviceId)
+      : await findBestService(payload, web.id)
+
+    if (!service?.id) {
+      return Response.json({
+        ok: true,
+        webCode,
+        serviceId: null,
+        mediaId: mediaDoc.id,
+        filename: mediaDoc.filename,
+        url: mediaDoc.url,
+        warning: `Bulletin file was uploaded, but no target zpravodaj record was found for webCode ${webCode}.`,
+      })
+    }
 
     const updatedService = await payload.update({
       collection: 'zpravodaj',
