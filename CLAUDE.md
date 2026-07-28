@@ -10,10 +10,13 @@ Payload CMS is deployed and running at https://cms.algaweb.site. Auto-deploy fro
 - **Live URL**: https://cms.algaweb.site
 
 ## Stack
-- Payload CMS v3 (`^3.77.0`) with PostgreSQL adapter
+- Payload CMS v3 (`^3.77.0`) with **MongoDB** adapter (`@payloadcms/db-mongodb`, `mongooseAdapter`)
 - Next.js 15.4.11 (pinned exact version - DO NOT use `^`)
 - Node 22, Docker multi-stage build, standalone output
+- Headless LibreOffice Writer in the runner image (converts .docx bulletins to PDF)
 - Sliplane container hosting (Germany/nbg server)
+
+Schema-less database: adding a field to a collection needs no migration.
 
 ## Sliplane IDs
 - **Project**: `project_87svpxfeevaz`
@@ -29,8 +32,12 @@ Payload CMS is deployed and running at https://cms.algaweb.site. Auto-deploy fro
 - `SLIPLANE_SKIP_CACHE`: `true`
 
 ## Key Files
-- `src/payload.config.ts` - Main Payload config (PostgreSQL adapter with `push: true`)
+- `src/payload.config.ts` - Main Payload config (MongoDB adapter)
 - `src/app/api/health/route.ts` - Health endpoint for Sliplane healthcheck (no DB dependency)
+- `src/app/api/bulletin-ingest/route.ts` - Bulletin ingest for farnosthnojice.cz (converts Word to PDF)
+- `src/lib/docx-to-pdf.ts` - Headless LibreOffice wrapper; validates file signature, own profile per call, 30s timeout
+- `src/hooks/obfuscateForPublic.ts` - `afterRead` hook hiding contact details from unauthenticated API reads
+- `scripts/test-docx-to-pdf.mts` - Standalone converter check: `node --experimental-strip-types scripts/test-docx-to-pdf.mts`
 - `Dockerfile` - Multi-stage build, uses `npm install` (not `npm ci`), runs as `nextjs` user
 - `.dockerignore` - Excludes node_modules, .next, .git, .env
 - `next.config.mjs` - Has `output: 'standalone'` and webpack extensionAlias config

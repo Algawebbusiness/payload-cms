@@ -4,6 +4,8 @@ import os from 'os'
 import path from 'path'
 import { getPayload } from 'payload'
 
+import { DocxConversionError, docxToPdf, isWordDocument, pdfFilenameFor } from '../../../lib/docx-to-pdf'
+
 export const dynamic = 'force-dynamic'
 
 const INGEST_HEADER = 'x-bulletin-ingest-token'
@@ -44,10 +46,23 @@ export async function POST(request: Request) {
 
   try {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'payload-bulletin-'))
-    const filename = sanitizeFilename(upload.name || defaultFilenameForMimeType(upload.type))
-    const tempFilePath = path.join(tempDir, filename)
-    const buffer = Buffer.from(await upload.arrayBuffer())
+    let filename = sanitizeFilename(upload.name || defaultFilenameForMimeType(upload.type))
+    let buffer: Buffer = Buffer.from(await upload.arrayBuffer())
 
+    // Word documents are converted up front, so everything downstream — media,
+    // the zpravodaj relation and the public site — only ever sees a PDF.
+    if (isWordDocument(upload.type, filename)) {
+      try {
+        buffer = await docxToPdf(buffer, filename)
+        filename = pdfFilenameFor(filename)
+      } catch (error) {
+        const reason =
+          error instanceof DocxConversionError ? error.message : 'Word document could not be converted to PDF.'
+        return Response.json({ ok: false, error: reason }, { status: 422 })
+      }
+    }
+
+    const tempFilePath = path.join(tempDir, filename)
     await writeFile(tempFilePath, buffer)
 
     const webTenantId = web.tenant
@@ -190,5 +205,7 @@ function defaultFilenameForMimeType(mimeType: string) {
   if (normalized.includes('webp')) return 'tydenni-zpravodaj.webp'
   if (normalized.includes('gif')) return 'tydenni-zpravodaj.gif'
   if (normalized.includes('jpeg') || normalized.includes('jpg')) return 'tydenni-zpravodaj.jpg'
+  if (normalized.includes('wordprocessingml')) return 'tydenni-zpravodaj.docx'
+  if (normalized.includes('msword')) return 'tydenni-zpravodaj.doc'
   return 'tydenni-zpravodaj'
 }

@@ -31,11 +31,29 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Headless LibreOffice converts e-mailed .docx bulletins to PDF (src/lib/docx-to-pdf.ts).
+# Only the Writer component is installed; the full suite would roughly double the image.
+#
+# Fonts matter for fidelity, not just for diacritics:
+#   ttf-liberation  metric-compatible stand-ins for Times New Roman / Arial, so Word
+#                   layouts keep their line breaks instead of reflowing
+#   ttf-dejavu      broad Latin coverage including Czech
+#   font-noto       last-resort fallback for anything else
+RUN apk add --no-cache \
+      libreoffice-writer \
+      ttf-liberation \
+      ttf-dejavu \
+      font-noto
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 RUN mkdir -p public media
 RUN chown nextjs:nodejs media
+
+# LibreOffice gets an explicit per-conversion profile, but still expects a writable HOME.
+RUN mkdir -p /home/nextjs && chown nextjs:nodejs /home/nextjs
+ENV HOME=/home/nextjs
 
 COPY --from=builder /app/public ./public
 

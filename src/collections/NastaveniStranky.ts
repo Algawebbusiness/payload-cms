@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { publicOrTenantRead, tenantCreate, tenantWrite } from '../access/tenantAccess'
+import { obfuscateForPublic } from '../hooks/obfuscateForPublic'
 
 export const NastaveniStranky: CollectionConfig = {
   slug: 'nastaveni-stranky',
@@ -74,6 +75,53 @@ export const NastaveniStranky: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'duchovniSprava',
+      label: 'Duchovní správa',
+      type: 'array',
+      labels: {
+        singular: 'Osoba',
+        plural: 'Osoby',
+      },
+      admin: {
+        description:
+          'Kněží a další osoby duchovní správy. Zobrazí se v sekci Kontakt nad adresou.',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'jmeno',
+          label: 'Jméno',
+          type: 'text',
+          required: true,
+          admin: { description: 'Například: P. Jan Jašek' },
+        },
+        {
+          name: 'funkce',
+          label: 'Funkce',
+          type: 'text',
+          admin: { description: 'Například: farář' },
+        },
+        {
+          name: 'popis',
+          label: 'Popis',
+          type: 'textarea',
+          admin: { description: 'Například: vede duchovní správu farnosti' },
+        },
+        {
+          name: 'email',
+          label: 'E-mail',
+          type: 'email',
+          hooks: { afterRead: [obfuscateForPublic] },
+        },
+        {
+          name: 'telefon',
+          label: 'Telefon',
+          type: 'text',
+          hooks: { afterRead: [obfuscateForPublic] },
+        },
+      ],
+    },
+    {
       name: 'kontakt',
       label: 'Kontakt',
       type: 'group',
@@ -82,11 +130,13 @@ export const NastaveniStranky: CollectionConfig = {
           name: 'email',
           label: 'E-mail',
           type: 'email',
+          hooks: { afterRead: [obfuscateForPublic] },
         },
         {
           name: 'telefon',
           label: 'Telefon',
           type: 'text',
+          hooks: { afterRead: [obfuscateForPublic] },
         },
       ],
     },
