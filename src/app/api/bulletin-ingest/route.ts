@@ -5,6 +5,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import { DocxConversionError, docxToPdf, isWordDocument, pdfFilenameFor } from '../../../lib/docx-to-pdf'
+import { DEFAULT_INGEST_TARGET, deriveTitle, resolveIngestTarget } from '../../../lib/ingest-targets'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,9 +32,13 @@ export async function POST(request: Request) {
   }
 
   const webCode = readString(formData, 'webCode') || DEFAULT_WEB_CODE
-  const serviceId = readString(formData, 'serviceId')
+  const target = resolveIngestTarget(readString(formData, 'target') || DEFAULT_INGEST_TARGET)
   const subject = readString(formData, 'subject')
   const sender = readString(formData, 'from')
+
+  if (!target) {
+    return Response.json({ ok: false, error: 'Unknown ingest target.' }, { status: 400 })
+  }
 
   const payload = (await getPayload({ config: configPromise })) as any
   const web = await findWebByCode(payload, webCode)
@@ -50,7 +55,7 @@ export async function POST(request: Request) {
     let buffer: Buffer = Buffer.from(await upload.arrayBuffer())
 
     // Word documents are converted up front, so everything downstream — media,
-    // the zpravodaj relation and the public site — only ever sees a PDF.
+    // the record's attachment and the public site — only ever sees a PDF.
     if (isWordDocument(upload.type, filename)) {
       try {
         buffer = await docxToPdf(buffer, filename)
@@ -81,35 +86,31 @@ export async function POST(request: Request) {
       overrideAccess: true,
     })
 
-    const service = serviceId
-      ? await findServiceById(payload, serviceId)
-      : await findBestService(payload, web.id)
-
-    if (!service?.id) {
-      return Response.json({
-        ok: true,
-        webCode,
-        serviceId: null,
-        mediaId: mediaDoc.id,
-        filename: mediaDoc.filename,
-        url: mediaDoc.url,
-        warning: `Bulletin file was uploaded, but no target zpravodaj record was found for webCode ${webCode}.`,
-      })
-    }
-
-    const updatedService = await payload.update({
-      collection: 'zpravodaj',
-      id: service.id,
+    // One e-mail, one record. Overwriting an existing record left no history,
+    // which is why the site had to guess the current bulletin from the media
+    // collection and why an archive had nothing to list.
+    const now = new Date()
+    const record = await payload.create({
+      collection: target.slug,
       data: {
-        bulletin: mediaDoc.id,
+        title: deriveTitle({ date: now, filename: upload.name, subject, target }),
+        date: now.toISOString(),
+        web: web.id,
+        isActive: true,
+        [target.attachmentField]: mediaDoc.id,
+        // Without this a draft-enabled collection stores the record as a draft,
+        // and public reads skip drafts — the bulletin would never reach the site.
+        ...(target.usesDrafts ? { _status: 'published' } : {}),
+        ...(webTenantId ? { tenant: webTenantId } : {}),
       },
       overrideAccess: true,
     })
 
     return Response.json({
       ok: true,
+      target: target.slug,
       webCode,
-      serviceId: updatedService.id,
+      recordId: record.id,
       mediaId: mediaDoc.id,
       filename: mediaDoc.filename,
       url: mediaDoc.url,
@@ -134,58 +135,6 @@ async function findWebByCode(payload: any, webCode: string) {
     overrideAccess: true,
   })
   return result.docs[0] || null
-}
-
-async function findServiceById(payload: any, serviceId: string) {
-  try {
-    return await payload.findByID({
-      collection: 'zpravodaj',
-      id: serviceId,
-      overrideAccess: true,
-    })
-  } catch {
-    return null
-  }
-}
-
-async function findBestService(payload: any, webId: string) {
-  const result = await payload.find({
-    collection: 'zpravodaj',
-    where: {
-      and: [
-        { web: { equals: webId } },
-        { isActive: { equals: true } },
-      ],
-    },
-    sort: 'date',
-    limit: 20,
-    overrideAccess: true,
-  })
-  return pickBestService(result.docs)
-}
-
-function pickBestService(services: any[]) {
-  if (!Array.isArray(services) || services.length === 0) return null
-
-  const now = Date.now()
-  const datedServices = services
-    .map((service) => ({ service, ts: toTimestamp(service?.date) }))
-    .filter((item) => Number.isFinite(item.ts))
-
-  if (datedServices.length === 0) return services[0]
-
-  const upcoming = datedServices
-    .filter((item) => item.ts >= now)
-    .sort((a, b) => a.ts - b.ts)
-
-  if (upcoming.length > 0) return upcoming[0].service
-
-  return datedServices.sort((a, b) => b.ts - a.ts)[0].service
-}
-
-function toTimestamp(value?: null | string) {
-  if (!value) return Number.NaN
-  return new Date(value).getTime()
 }
 
 function sanitizeFilename(filename: string) {
