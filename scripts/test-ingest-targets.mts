@@ -26,6 +26,11 @@ check(resolveIngestTarget('') === null, 'rejects an empty target')
 check(resolveIngestTarget(undefined) === null, 'rejects a missing target')
 check(DEFAULT_INGEST_TARGET === 'zpravodaj', 'defaults to zpravodaj for older worker versions')
 
+// zpravodaj has versions.drafts enabled, so ingest must publish explicitly or the
+// record never becomes publicly readable.
+check(resolveIngestTarget('zpravodaj')?.usesDrafts === true, 'zpravodaj is flagged as draft-enabled')
+check(resolveIngestTarget('aktuality')?.usesDrafts === false, 'aktuality is flagged as not draft-enabled')
+
 const target = resolveIngestTarget('aktuality')!
 const date = new Date('2026-07-29T08:00:00.000Z')
 check(deriveTitle({ date, filename: 'x.pdf', subject: 'Pouť ke sv. Anně', target }) === 'Pouť ke sv. Anně', 'prefers the subject')

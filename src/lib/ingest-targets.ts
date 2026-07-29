@@ -8,11 +8,29 @@ export type IngestTarget = {
   slug: 'aktuality' | 'zpravodaj'
   attachmentField: 'bulletin' | 'priloha'
   fallbackTitlePrefix: string
+  /**
+   * Whether the collection has `versions.drafts` enabled.
+   *
+   * On a draft-enabled collection Payload creates records as drafts, and public
+   * reads skip drafts entirely — an ingested bulletin would never reach the site.
+   * Ingest therefore has to publish explicitly.
+   */
+  usesDrafts: boolean
 }
 
 const TARGETS: Record<string, IngestTarget> = {
-  zpravodaj: { slug: 'zpravodaj', attachmentField: 'bulletin', fallbackTitlePrefix: 'Zpravodaj' },
-  aktuality: { slug: 'aktuality', attachmentField: 'priloha', fallbackTitlePrefix: 'Aktualita' },
+  zpravodaj: {
+    slug: 'zpravodaj',
+    attachmentField: 'bulletin',
+    fallbackTitlePrefix: 'Zpravodaj',
+    usesDrafts: true,
+  },
+  aktuality: {
+    slug: 'aktuality',
+    attachmentField: 'priloha',
+    fallbackTitlePrefix: 'Aktualita',
+    usesDrafts: false,
+  },
 }
 
 /** Used when a worker predating the Aktuality rollout sends no target. */
