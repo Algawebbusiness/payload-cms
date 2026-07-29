@@ -14,6 +14,7 @@ import { Weby } from './collections/Weby'
 import { Kategorie } from './collections/Kategorie'
 import { Stranky } from './collections/Stranky'
 import { Zpravodaj } from './collections/Zpravodaj'
+import { Aktuality } from './collections/Aktuality'
 import { Blogy } from './collections/Blogy'
 import { Produkty } from './collections/Produkty'
 import { NastaveniStranky } from './collections/NastaveniStranky'
@@ -58,6 +59,7 @@ export default buildConfig({
     Kategorie,
     Stranky,
     Zpravodaj,
+    Aktuality,
     Blogy,
     Produkty,
     NastaveniStranky,
