@@ -18,6 +18,7 @@ import { Aktuality } from './collections/Aktuality'
 import { Blogy } from './collections/Blogy'
 import { Produkty } from './collections/Produkty'
 import { NastaveniStranky } from './collections/NastaveniStranky'
+import { bootstrapSuperadmin } from './lib/bootstrap-superadmin'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -65,6 +66,7 @@ export default buildConfig({
     NastaveniStranky,
   ],
   editor: lexicalEditor(),
+  onInit: bootstrapSuperadmin,
   secret: process.env.PAYLOAD_SECRET || '',
   cors: allowedOrigins,
   csrf: allowedOrigins,
